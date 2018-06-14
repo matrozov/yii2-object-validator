@@ -8,7 +8,7 @@ use yii\validators\Validator;
 
 class SubObjectValidator extends Validator
 {
-    const SEPARATOR = ' → ';
+    const SEPARATOR = '·';
 
     public $rules = [];
 
