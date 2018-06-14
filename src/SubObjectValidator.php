@@ -8,6 +8,8 @@ use yii\validators\Validator;
 
 class SubObjectValidator extends Validator
 {
+    const SEPARATOR = ' → ';
+
     public $rules = [];
 
     /**
@@ -44,7 +46,7 @@ class SubObjectValidator extends Validator
             $fields = [];
 
             foreach ((array)$rule[0] as $field) {
-                $fields[] = $attribute . ':' . $field;
+                $fields[] = $attribute . self::SEPARATOR . $field;
             }
 
             $rules[] = array_merge([$fields], array_slice($rule, 1));
@@ -53,7 +55,7 @@ class SubObjectValidator extends Validator
         $attributes = [];
 
         foreach ($value as $key => $val) {
-            $attributes[$attribute . ':' . $key] = $val;
+            $attributes[$attribute . self::SEPARATOR . $key] = $val;
         }
 
         $dynModel = DynamicModel::validateData($attributes, $rules);
