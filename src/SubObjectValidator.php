@@ -40,17 +40,29 @@ class SubObjectValidator extends Validator
             return;
         }
 
+        $rules = [];
+
+        foreach ($this->rules as $rule) {
+            $fields = [];
+
+            foreach ((array)$rule[0] as $field) {
+                $fields[] = $attribute . ':' . $field;
+            }
+
+            $rules[] = array_merge([$fields], array_slice($rule, 1));
+        }
+
         $attributes = [];
 
         foreach ($value as $key => $val) {
-            $attributes[$key] = $val;
+            $attributes[$attribute . ':' . $key] = $val;
         }
 
         $dynModel = DynamicModel::validateData($attributes, $this->rules);
 
         foreach ($dynModel->errors as $errors) {
             foreach ($errors as $error) {
-                $this->addError($model, $attribute, $this->messageField, ['message' => $error]);
+                $this->addError($model, $attribute, $error);
             }
         }
 
