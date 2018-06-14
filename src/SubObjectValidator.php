@@ -10,8 +10,6 @@ class SubObjectValidator extends Validator
 {
     public $rules = [];
 
-    public $messageField = '{attribute}.{message}';
-
     /**
      * {@inheritdoc}
      */
@@ -35,7 +33,7 @@ class SubObjectValidator extends Validator
     {
         $value = $model->$attribute;
 
-        if (!is_object($value) || !is_array($value) || !($value instanceof \ArrayAccess)) {
+        if (!is_object($value) && !is_array($value) && !($value instanceof \ArrayAccess)) {
             $this->addError($model, $attribute, $this->message, []);
             return;
         }
@@ -58,7 +56,7 @@ class SubObjectValidator extends Validator
             $attributes[$attribute . ':' . $key] = $val;
         }
 
-        $dynModel = DynamicModel::validateData($attributes, $this->rules);
+        $dynModel = DynamicModel::validateData($attributes, $rules);
 
         foreach ($dynModel->errors as $errors) {
             foreach ($errors as $error) {
