@@ -68,4 +68,25 @@ class SubObjectValidator extends Validator
 
         $model->$attribute = $attributes;
     }
+
+    /**
+     * @param mixed $value
+     *
+     * @return array|null
+     * @throws
+     */
+    public function validateValue($value)
+    {
+        if (!is_object($value) && !is_array($value) && !($value instanceof \ArrayAccess)) {
+            return [$this->message, []];
+        }
+
+        $dynModel = DynamicModel::validateData($value, $this->rules);
+
+        if ($dynModel->hasErrors()) {
+            return [reset(reset($dynModel->errors)), []];
+        }
+
+        return null;
+    }
 }
