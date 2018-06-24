@@ -3,19 +3,28 @@ namespace matrozov\yii2subObjectValidator;
 
 use Yii;
 use yii\base\Model;
-use yii\base\DynamicModel;
+use yii\base\InvalidConfigException;
 use yii\validators\Validator;
 
 /**
  * Class SubObjectValidator
  * @package matrozov\yii2subObjectValidator
+ *
+ * @property array   $rules
+ * @property boolean $strictObject
  */
 class SubObjectValidator extends Validator
 {
-    const SEPARATOR = '·';
+    const SEPARATOR = '->';
 
+    /**
+     * @var array
+     */
     public $rules = [];
 
+    /**
+     * @var bool
+     */
     public $strictObject = false;
 
     /**
@@ -48,11 +57,17 @@ class SubObjectValidator extends Validator
 
         $rules = [];
 
+        // Prepare rules
         foreach ($this->rules as $rule) {
             $fields = [];
 
             foreach ((array)$rule[0] as $field) {
-                $fields[] = $attribute . self::SEPARATOR . $field;
+                if (substr($field, 0, 1) === '!') {
+                    $fields[] = '!' . $attribute . self::SEPARATOR . ltrim($field, '!');
+                }
+                else {
+                    $fields[] = $attribute . self::SEPARATOR . $field;
+                }
             }
 
             $rules[] = array_merge([$fields], array_slice($rule, 1));
@@ -60,15 +75,50 @@ class SubObjectValidator extends Validator
 
         $attributes = [];
 
+        // Prepare attributes
         foreach ($value as $key => $val) {
             $attributes[$attribute . self::SEPARATOR . $key] = $val;
         }
 
-        $dynModel = DynamicModel::validateData($attributes, $rules);
+        $subModel = new DynamicModel($attributes);
 
-        foreach ($dynModel->errors as $errors) {
+        // Set attribute labels
+        $subModel->setAttributeLabels($model->attributeLabels());
+
+        $validators = $subModel->getValidators();
+
+        // Prepare validators
+        foreach ($rules as $rule) {
+            if ($rule instanceof Validator) {
+                $validators->append($rule);
+            }
+            elseif (is_array($rule) && isset($rule[0], $rule[1])) { // attributes, validator type
+                $validator = Validator::createValidator($rule[1], $model, (array)$rule[0], array_slice($rule, 2));
+                $validators->append($validator);
+            }
+            else {
+                throw new InvalidConfigException('Invalid validation rule: a rule must specify both attribute names and validator type.');
+            }
+        }
+
+        $subModel->validate();
+
+        // Transfer error messages
+        foreach ($subModel->errors as $subAttribute => $errors) {
+            $params = [];
+
+            $subAttributeValue = $subModel->$subAttribute;
+
+            if (is_array($subAttributeValue)) {
+                $subAttributeValue = 'array()';
+            } elseif (is_object($subAttributeValue) && !method_exists($subAttributeValue, '__toString')) {
+                $subAttributeValue = '(object)';
+            }
+
             foreach ($errors as $error) {
-                $this->addError($model, $attribute, $error);
+                $this->addError($model, $subAttribute, $error, [
+                    'value' => $subAttributeValue,
+                ]);
             }
         }
 
