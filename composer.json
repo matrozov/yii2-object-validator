@@ -1,5 +1,5 @@
 {
-    "name": "matrozov/yii2-subObject-validator",
+    "name": "matrozov/yii2-sub-object-validator",
     "description": "Sub-object validator for Yii2",
     "keywords": ["yii2", "yii2-extension", "validator", "sub-object", "sub-model"],
     "homepage": "https://github.com/matrozov/yii2-subObject-validator",
