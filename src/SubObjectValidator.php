@@ -6,11 +6,17 @@ use yii\base\Model;
 use yii\base\DynamicModel;
 use yii\validators\Validator;
 
+/**
+ * Class SubObjectValidator
+ * @package matrozov\yii2subObjectValidator
+ */
 class SubObjectValidator extends Validator
 {
     const SEPARATOR = '·';
 
     public $rules = [];
+
+    public $strictObject = false;
 
     /**
      * {@inheritdoc}
@@ -35,7 +41,7 @@ class SubObjectValidator extends Validator
     {
         $value = $model->$attribute;
 
-        if (!is_object($value) && !is_array($value) && !($value instanceof \ArrayAccess)) {
+        if (($this->strictObject && !is_object($value)) || (!$this->strictObject && !is_object($value) && !is_array($value) && !($value instanceof \ArrayAccess))) {
             $this->addError($model, $attribute, $this->message, []);
             return;
         }
