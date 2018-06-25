@@ -122,7 +122,7 @@ class SubObjectValidator extends Validator
             }
         }
 
-        $model->$attribute = $attributes;
+        $model->$attribute = $value;
     }
 
     /**
