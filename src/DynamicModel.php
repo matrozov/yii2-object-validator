@@ -8,6 +8,26 @@ class DynamicModel extends \yii\base\DynamicModel
     protected $_labels;
 
     /**
+     * {@inheritdoc}
+     */
+    public function __get($name)
+    {
+        if (parent::__isset($name)) {
+            return parent::__get($name);
+        }
+
+        return null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function __isset($name)
+    {
+        return true;
+    }
+
+    /**
      * @param $labels
      */
     function setAttributeLabels($labels)
